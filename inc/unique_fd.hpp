@@ -2,7 +2,7 @@
 # define FD_HPP
 
 class unique_fd {
-	private:
+	protected:
 		int _fd;
 	public:
 		unique_fd() noexcept;

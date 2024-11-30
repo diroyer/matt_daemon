@@ -2,14 +2,23 @@
 #include <stdexcept>
 #include <iostream>
 #include "file.hpp"
+#include <unistd.h>
+#include <cstring>
+#include "tintin_reporter.hpp"
+#include "socket.hpp"
 
 int	main(void) {
 	try {
-		file fl("/var/lock/daemon.lock", O_CREAT | O_RDONLY);
-		guard_lock guard(fl);
-		Deamon deamon;
-	} catch (const std::exception &e) {
-		std::cerr << e.what() << std::endl;
-	}
+		class socket s(AF_UNIX, SOCK_STREAM);
+		s.bind(addr("./yolo"));
+		s.listen();
 
+		Deamon deamon;
+		deamon.run();
+		Tintin_reporter::report("Daemon started\n");
+		return 0;
+	} catch (const std::exception &e) {
+		Tintin_reporter::report(e.what());
+		return 1;
+	}
 }

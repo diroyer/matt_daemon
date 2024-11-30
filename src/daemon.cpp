@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <sys/stat.h>
+#include "file.hpp"
 
 void Deamon::_is_root() {
 	if (::getuid() != 0) {
@@ -55,4 +56,9 @@ void Deamon::run() {
 	_go_to_root();
 	umask(0);
 	_close_fds();
+
+	file fl("/var/lock/daemon.lock", O_CREAT | O_RDONLY);
+	guard_lock guard(fl);
+
+	sleep(10);
 }
