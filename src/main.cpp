@@ -6,12 +6,13 @@
 #include <cstring>
 #include "tintin_reporter.hpp"
 #include "socket.hpp"
+#include "server.hpp"
 
 int	main(void) {
 	try {
-		class socket s(AF_UNIX, SOCK_STREAM);
-		s.bind(addr("./yolo"));
-		s.listen();
+
+		server server;
+		return 0;
 
 		Deamon deamon;
 		deamon.run();

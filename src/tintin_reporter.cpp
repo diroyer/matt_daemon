@@ -34,4 +34,5 @@ void Tintin_reporter::report(const char *message) {
 	}
 
 	static_cast<void>(::write(fd, message, strlen(message)));
+	static_cast<void>(::write(fd, "\n", 1));
 }

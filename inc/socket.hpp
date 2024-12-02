@@ -7,6 +7,9 @@
 #include <sys/un.h>
 #include <string>
 
+
+namespace net {
+
 class addr;
 
 class socket : public unique_fd {
@@ -59,6 +62,8 @@ class addr {
 
 
 };
+
+}
 
 
 #endif // SOCKET_HPP

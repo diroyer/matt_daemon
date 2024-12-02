@@ -1,5 +1,5 @@
 *.o
 *.d
 .cache
-Matt_deamon
+Matt_daemon
 *.json
