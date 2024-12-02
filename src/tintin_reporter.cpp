@@ -5,8 +5,6 @@
 #include "file.hpp"
 #include "sys/stat.h"
 
-#define log_folder "/var/log/matt_daemon"
-#define log_file "/var/log/matt_daemon/matt_daemon.log"
 
 bool Tintin_reporter::check_folder(void) {
 	static const char *folder[] = 

@@ -1,5 +1,6 @@
 #include "server.hpp"
 #include "tintin_reporter.hpp"
+#include "running.hpp"
 #include <iostream>
 
 server::server() : _socket{AF_UNIX, SOCK_STREAM} {
@@ -7,6 +8,9 @@ server::server() : _socket{AF_UNIX, SOCK_STREAM} {
 
 	_socket.bind(net::addr{sock_file});
 	_socket.listen();
+
+	// add server to epoll
+	_epoll.add(*this);
 
 	Tintin_reporter::report("Server started");	
 
@@ -34,4 +38,15 @@ void server::disconnect() {
 server::~server() noexcept {
 	Tintin_reporter::report("Server stopped");
 	unlink(sock_file);
+}
+
+
+
+void server::run() {
+
+	while (running::state() == true) {
+
+		_epoll.wait();
+		Tintin_reporter::report(".");
+	}
 }

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unistd.h>
 #include "client.hpp"
+#include "epoll.hpp"
 
 #define sock_file "/tmp/matt_daemon.sock"
 
@@ -40,6 +41,7 @@ class server : public ioevent {
 	private:
 		net::socket _socket;
 		std::unordered_map<int, client> _clients;
+		epoll _epoll;
 
 	public:
 		server();
@@ -53,6 +55,8 @@ class server : public ioevent {
 		void read() override;
 		void write() override;
 		void disconnect() override;
+
+		void run();
 };
 
 #endif // SERVER_HPP
