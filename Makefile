@@ -18,7 +18,7 @@ override deps	:= $(srcs:.cpp=.d)
 
 override incs	:= $(shell find $(incdir) -type f -name "*.hpp")
 
-override log	:= /var/log/matt_deamon/matt_deamon.log
+override log	:= /var/log/matt_daemon/matt_daemon.log
 
 override lock	:= /var/lock/matt_deamon.lock
 
@@ -60,12 +60,23 @@ $(compile_commands): $(srcs) Makefile
 clean:
 	rm -f $(objs) $(deps) $(compile_commands)
 
-fclean: clean
+fclean: clean restart
 	rm -f $(log) $(lock) $(NAME) 
 
 re: fclean all
 
-.PHONY: all clean fclean re
+
+log:
+	@if [ ! -f $(log) ]; then
+		echo 'log file not found'
+	else
+		tail -f $(log)
+	fi
+
+restart:
+	rm -f $(lock) $(log)
+
+.PHONY: all clean fclean re log restart
 
 # -- F U N C T I O N S --------------------------------------------------------
 
