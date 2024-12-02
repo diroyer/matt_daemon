@@ -1,5 +1,5 @@
-*.o
-*.d
-.cache
-Matt_daemon
-*.json
+/src/**/*.o
+/src/**/*.d
+/.cache
+/Matt_daemon
+/compile_commands.json
