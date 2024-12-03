@@ -60,7 +60,7 @@ clean:
 	@rm -vf $(objs) $(deps) $(compile_commands)
 
 fclean: clean restart
-	@rm -vf $(log) $(lock) $(name)
+	@rm -vrf $(log) $(lock) $(name) '.cache'
 
 re: fclean all
 
