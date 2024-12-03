@@ -14,7 +14,7 @@ class epoll final {
 
 		unique_fd _epoll;
 
-	public:
+		static auto _shared(void) -> epoll&;
 
 		epoll();
 
@@ -25,16 +25,18 @@ class epoll final {
 
 		~epoll() noexcept = default;
 
+		static ioevent& _data(epoll_event&) noexcept;
 
-		void add(ioevent&) const;
+	public:
+
+		static void add(ioevent&);
 
 
-		void del(const ioevent& io) const noexcept;
+		static void del(const ioevent& io) noexcept;
 
 
-		void wait() const;
+		static void poll(void);
 
-		ioevent& data(epoll_event&) const noexcept;
 };
 
 #endif // EPOLL_HPP

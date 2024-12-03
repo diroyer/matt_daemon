@@ -20,7 +20,7 @@ override incs	:= $(shell find $(incdir) -type f -name "*.hpp")
 
 override log	:= /var/log/matt_daemon/matt_daemon.log
 
-override lock	:= /var/lock/matt_deamon.lock
+override lock	:= /var/lock/matt_daemon.lock
 
 override cxx	:= ccache clang++
 
@@ -42,26 +42,25 @@ override depsflags	= -MT $@ -MMD -MP -MF $*.d
 
 override compile_commands := compile_commands.json
 
-NAME := Matt_daemon
+override name := Matt_daemon
 
-all: $(compile_commands) $(NAME)
+all: $(compile_commands) $(name)
 
-$(NAME): $(objs)
+$(name): $(objs)
 	$(cxx) $^ -o $@ $(ldflags)
 
 $(compile_commands): $(srcs) Makefile
 	$(call generate_compile_commands)
 
 -include $(deps)
-
 %.o: %.cpp Makefile
 	$(cxx) $(depsflags) $(cxxflags) -c $< -o $@
 
 clean:
-	rm -f $(objs) $(deps) $(compile_commands)
+	@rm -vf $(objs) $(deps) $(compile_commands)
 
 fclean: clean restart
-	rm -f $(log) $(lock) $(NAME) 
+	@rm -vf $(log) $(lock) $(name)
 
 re: fclean all
 
@@ -73,10 +72,21 @@ log:
 		tail -f $(log)
 	fi
 
-restart:
-	rm -f $(lock) $(log)
+restart: kill
+	@rm -vf $(lock) $(log)
 
-.PHONY: all clean fclean re log restart
+
+signal := KILL
+
+kill:
+	@pid=$$(ps aux | grep $(name) | grep -v 'grep' | awk '{print $$2}')
+	if [ -z "$$pid" ]; then
+		echo 'process not found'
+	else
+		kill -s $(signal) $$pid
+	fi
+
+.PHONY: all clean fclean re log restart kill
 
 # -- F U N C T I O N S --------------------------------------------------------
 

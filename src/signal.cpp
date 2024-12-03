@@ -6,31 +6,31 @@
 static void handler(int sig) {
 	switch (sig) {
 		case SIGINT:
-			Tintin_reporter::report("SIGINT received");
+			Tintin_reporter::signal("SIGINT received");
 			running::stop();
 			break;
 		case SIGTERM:
-			Tintin_reporter::report("SIGTERM received");
+			Tintin_reporter::signal("SIGTERM received");
 			running::stop();
 			break;
 		case SIGQUIT:
-			Tintin_reporter::report("SIGQUIT received");
+			Tintin_reporter::signal("SIGQUIT received");
 			running::stop();
 			break;
 		case SIGABRT:
-			Tintin_reporter::report("SIGABRT received");
+			Tintin_reporter::signal("SIGABRT received");
 			running::stop();
 			break;
 		case SIGHUP:
-			Tintin_reporter::report("SIGHUP received");
+			Tintin_reporter::signal("SIGHUP received");
 			running::stop();
 			break;
 		case SIGSEGV:
-			Tintin_reporter::report("SIGSEGV received");
+			Tintin_reporter::signal("SIGSEGV received");
 			running::stop();
 			break;
 		default:
-			Tintin_reporter::report("Unknown signal received");
+			Tintin_reporter::signal("Unknown signal received");
 			break;
 	}
 }

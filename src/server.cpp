@@ -3,20 +3,20 @@
 #include "running.hpp"
 #include <iostream>
 #include "client_manager.hpp"
+#include <unistd.h>
 
-server::server() : _socket{AF_INET, SOCK_STREAM} {
-	//unlink_guard guard(sock_file);
+server::server()
+: _socket{AF_INET, SOCK_STREAM} {
 
+	_socket.reuse_address();
 	_socket.bind(net::addr{in_addr{INADDR_ANY}, 4242});
 	_socket.listen();
 
 	_socket.non_blocking();
 
-	_epoll.add(*this);
+	epoll::add(*this);
 
-	Tintin_reporter::report("Server started");	
-
-	//guard.complete();
+	Tintin_reporter::server("Server started");	
 }
 
 int server::fd() const noexcept {
@@ -28,7 +28,7 @@ void server::read() {
 	net::socket client_sock = _socket.accept();
 
 	if (client_manager::size() >= 3) {
-		Tintin_reporter::report("Too many clients");
+		Tintin_reporter::server("too many clients");
 		client_sock.shutdown();
 		return;
 	}
@@ -37,9 +37,9 @@ void server::read() {
 
 	auto &client = client_manager::add(std::move(client_sock));
 
-	_epoll.add(client);
+	epoll::add(client);
 
-	Tintin_reporter::report("New client connected");
+	Tintin_reporter::server("new client connected");
 }
 
 void server::write() {
@@ -49,14 +49,15 @@ void server::disconnect() {
 }
 
 server::~server() noexcept {
-	Tintin_reporter::report("Server stopped");
-	//unlink(sock_file);
+	epoll::del(*this);
+	Tintin_reporter::server("server stopped");
 }
 
 void server::run() {
 
 	while (running::state() == true) {
 
-		_epoll.wait();
+		epoll::poll();
+		//inotify::watch();
 	}
 }

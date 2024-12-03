@@ -61,8 +61,8 @@ void Deamon::run() {
 	::umask(0);
 	_close_fds();
 
-	file fl("/var/lock/daemon.lock", O_CREAT | O_RDONLY);
+	file fl("/var/lock/matt_daemon.lock", O_CREAT);
 	guard_lock guard(fl);
 
-	server {}.run();
+	server{}.run();
 }

@@ -61,6 +61,16 @@ void net::socket::shutdown() const  {
 	}
 }
 
+void net::socket::reuse_address() const {
+
+	int opt = 1;
+
+	if (::setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+		throw std::runtime_error{"failed to set socket option"};
+}
+
+
+
 net::addr::addr() noexcept : _addr{}, _len{sizeof(sockaddr_storage)} {}
 
 net::addr::addr(in_addr ip, in_port_t port)

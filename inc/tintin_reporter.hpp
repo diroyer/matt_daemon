@@ -3,66 +3,199 @@
 
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
+#include <cstring>
+#include "timestamp.hpp"
 
 
-//class timestamp final {
-//
-//	using time_array = char[26U];
-//
-//	inline const time_array& get_time(void) {
-//
-//	static time_array time {
-//		'[', '2', '0', '2', '1', '-', '0', '1', '-', '0', '1', ' ', '0', '0', ':', '0', '0', ':', '0', '0', ']', '\0'
-//	};
-//
-//	return time;
-//}
-//}
+namespace sys {
 
 
+	inline auto write(const int& fd, const char* buffer, const size_t& size) -> void {
 
-class Tintin_reporter {
+		if (::write(fd, buffer, size) == -1)
+			throw std::runtime_error("write");
+	}
+
+	template <unsigned N>
+	auto write(const int& fd, const char (&buffer)[N]) -> void {
+		sys::write(fd, buffer, N);
+	}
+
+	inline auto write(const int& fd, const std::string_view& view) -> void {
+		sys::write(fd, view.data(), view.size());
+	}
+
+	inline auto write(const int& fd, const std::string& str) -> void {
+		sys::write(fd, str.data(), str.size());
+	}
+}
+
+class file_event {
+
+	public:
+
+		file_event(void) noexcept = default;
+		virtual ~file_event(void) noexcept = default;
+
+		virtual auto in_delete(void) -> void = 0;
+		virtual auto in_create(void) -> void = 0;
+		virtual auto in_modify(void) -> void = 0;
+		virtual auto in_ignored(void) -> void = 0;
+};
+
+#include <sys/stat.h>
+
+namespace sys {
+
+
+	template <unsigned N>
+	auto mkdir(const char (&path)[N], const mode_t& mode) -> void {
+		if (::mkdir(path, mode) == -1)
+			throw std::runtime_error("mkdir");
+	}
+
+	inline auto mkdir(const std::string_view& path, const mode_t& mode) -> void {
+		if (::mkdir(path.data(), mode) == -1)
+			throw std::runtime_error("mkdir");
+	}
+
+	template <unsigned N>
+	auto stat(const char (&path)[N]) -> struct ::stat {
+		struct ::stat st;
+
+		if (::stat(path, &st) == -1)
+			throw std::runtime_error("stat");
+
+		return st;
+	}
+
+	inline auto stat(const std::string_view& path) -> struct ::stat {
+		struct ::stat st;
+
+		if (::stat(path.data(), &st) == -1)
+			throw std::runtime_error("stat");
+
+		return st;
+	}
+
+}
+
+#include "file.hpp"
+
+class Tintin_reporter : public file_event {
 
 
 	private:
 
+		file _log;
+		std::string _buffer;
+
+
 		static constexpr const char *log_folder = "/var/log/matt_daemon";
 		static constexpr const char *log_file = "/var/log/matt_daemon/matt_daemon.log";
 
+		static void _setup(void);
 
 	public:
-		Tintin_reporter() = delete;
-		Tintin_reporter(const Tintin_reporter &src) = delete;
-		Tintin_reporter &operator=(const Tintin_reporter &src) = delete;
-		~Tintin_reporter() = delete;
 
-		static void report(const char *message);
-		static bool check_folder(void);
+		Tintin_reporter(void)
+		: _log{log_file, O_CREAT | O_WRONLY | O_APPEND, 0644},
+		  _buffer{} {
 
+			_setup();
 
-
-		template <typename T>
-		static void _print(std::ostream &os, const T& arg) {
-			os << arg << ' ';
+			// create folder and log file
+			// inotify::add("/var/log/matt_daemon", IN_IGNORED, IN_DELETE);
 		}
 
 
-		template <typename... Ts>
-		static void print(Ts&&... args) {
+		Tintin_reporter(const Tintin_reporter&) = delete;
+		Tintin_reporter &operator=(const Tintin_reporter&) = delete;
 
-			if (check_folder() == false) {
-				return;
+		~Tintin_reporter(void) noexcept = default;
+
+
+
+
+		void in_delete(void) override {
+
+			// recreate log file
+			_log = file{log_file, O_CREAT | O_WRONLY | O_APPEND, 0644};
+			// inotify::add("/var/log/matt_daemon", IN_IGNORED, IN_DELETE);
+		}
+
+		void in_create(void) override {
+		}
+
+		void in_modify(void) override {
+		}
+
+		void in_ignored(void) override {
+			in_delete();
+		}
+
+
+		static auto _shared(void) -> Tintin_reporter& {
+			static Tintin_reporter instance;
+			return instance;
+		}
+
+
+	private:
+
+		template <size_t N>
+		void _report(const char (&type)[N], const char *message) {
+
+
+			try {
+
+				timestamp ts;
+
+				_buffer.append(ts.view());
+				_buffer.append(type);
+				_buffer.append(message);
+				_buffer.append("\n");
+
+				sys::write(_log, _buffer);
+
+				_buffer.clear();
 			}
 
-			// open log file
-			std::ofstream log_file(Tintin_reporter::log_file, std::ios::app);
-
-			// write to log file
-			(_print(log_file, args), ...);
-
-			// close log file
-			log_file.close();
+			catch (const std::exception& e) {
+				// keep buffer
+			}
 		}
+
+
+	public:
+
+		static void info(const char* message) {
+			_shared()._report("\x1b[32m    info\x1b[0m -> ", message);
+		}
+
+		static void error(const char* message) {
+			_shared()._report("\x1b[31m   error\x1b[0m -> ", message);
+		}
+		static void signal(const char* message) {
+			_shared()._report("\x1b[33m  signal\x1b[0m -> ", message);
+		}
+		static void server(const char* message) {
+			_shared()._report("\x1b[34m  server\x1b[0m -> ", message);
+		}
+
+
+
+		//template <typename T>
+		//static void _print(std::ostream &os, const T& arg) {
+		//	os << arg << ' ';
+		//}
+		//
+		//
+		//template <typename... Ts>
+		//static void print(Ts&&... args) {
+		//
+		//}
 
 };
 

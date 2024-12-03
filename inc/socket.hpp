@@ -32,6 +32,8 @@ class socket : public unique_fd {
 
 		void shutdown() const;
 
+		void reuse_address() const;
+
 };
 
 class addr {
