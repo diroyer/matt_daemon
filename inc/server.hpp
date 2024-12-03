@@ -10,7 +10,6 @@
 
 #define sock_file "/tmp/matt_daemon.sock"
 
-
 class unlink_guard final {
 	private:
 		std::string _path;
@@ -40,7 +39,6 @@ class unlink_guard final {
 class server : public ioevent {
 	private:
 		net::socket _socket;
-		std::unordered_map<int, client> _clients;
 		epoll _epoll;
 
 	public:

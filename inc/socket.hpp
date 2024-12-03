@@ -28,6 +28,10 @@ class socket : public unique_fd {
 		socket accept(addr &) const;
 		socket accept() const;
 
+		void non_blocking() const;
+
+		void shutdown() const;
+
 };
 
 class addr {

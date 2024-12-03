@@ -33,6 +33,8 @@ class epoll final {
 
 
 		void wait() const;
+
+		ioevent& data(epoll_event&) const noexcept;
 };
 
 #endif // EPOLL_HPP

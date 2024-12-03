@@ -1,4 +1,5 @@
 #include "epoll.hpp"
+#include "tintin_reporter.hpp"
 
 
 epoll::epoll()
@@ -11,7 +12,7 @@ epoll::epoll()
 void epoll::add(ioevent& io) const {
 
 	struct ::epoll_event ev {
-		.events = EPOLLIN | EPOLLERR | EPOLLHUP,
+		.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLRDHUP,
 		.data = { .ptr = &io }
 	};
 
@@ -22,6 +23,10 @@ void epoll::add(ioevent& io) const {
 void epoll::del(const ioevent& io) const noexcept {
 
 	static_cast<void>(::epoll_ctl(_epoll, EPOLL_CTL_DEL, io.fd(), nullptr));
+}
+
+ioevent& epoll::data(epoll_event& event) const noexcept {
+	return *static_cast<ioevent*>(event.data.ptr);
 }
 
 void epoll::wait() const {
@@ -44,13 +49,17 @@ void epoll::wait() const {
 	// loop over events
 	for (int i = 0; i < result; ++i) {
 
-		ioevent& io = *static_cast<ioevent*>(buffer[i].data.ptr);
+		ioevent& io = data(buffer[i]);
+		const auto events = buffer[i].events;
 
-		if (buffer[i].events & EPOLLERR
-		 || buffer[i].events & EPOLLHUP)
+		if (events & EPOLLERR 
+		 || events & EPOLLHUP 
+		 || events & EPOLLRDHUP) {
+			Tintin_reporter::report("epollHUP");
 			io.disconnect();
 
-		if (buffer[i].events & EPOLLIN)
+		} else if (events & EPOLLIN) {
 			io.read();
+		}
 	}
 }

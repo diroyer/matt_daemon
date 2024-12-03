@@ -1,6 +1,7 @@
 #include "socket.hpp"
 #include <stdexcept>
 #include <unistd.h>
+#include <fcntl.h>
 
 net::socket::socket(int domain, int type, int protocol) 
 : unique_fd(::socket(domain, type, protocol)) {
@@ -25,6 +26,7 @@ void net::socket::listen(int backlog) const {
 	}
 }
 
+
 net::socket net::socket::accept(addr &addr) const {
 	class socket client;
 	
@@ -45,6 +47,18 @@ net::socket net::socket::accept() const {
 	}
 	client._fd = fd;
 	return client;
+}
+
+void net::socket::non_blocking() const {
+	if (fcntl(_fd, F_SETFL, O_NONBLOCK) == -1) {
+		throw std::runtime_error("Failed to set socket to non-blocking mode");
+	}
+}
+
+void net::socket::shutdown() const  {
+	if (::shutdown(_fd, SHUT_RDWR) == -1) {
+		throw std::runtime_error("Failed to shutdown socket");
+	}
 }
 
 net::addr::addr() noexcept : _addr{}, _len{sizeof(sockaddr_storage)} {}

@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "file.hpp"
+#include "server.hpp"
+#include "signal.hpp"
 
 void Deamon::_is_root() {
 	if (::getuid() != 0) {
@@ -19,7 +21,6 @@ pid_t Deamon::_fork() {
 }
 
 Deamon::Deamon() {
-	_is_root();
 }
 
 void Deamon::_new_session() {
@@ -41,24 +42,27 @@ void Deamon::_close_fds() {
 }
 
 void Deamon::run() {
-	/* Fork to creat orphan process */
+
+	sig::init();
+
+	_is_root();
+
 	if (_fork() != 0) {
 		return;
 	}
 
 	_new_session();
 
-	/* Fork to disassociate from terminal */
 	if (_fork() != 0) {
 		return;
 	}
 
 	_go_to_root();
-	umask(0);
+	::umask(0);
 	_close_fds();
 
 	file fl("/var/lock/daemon.lock", O_CREAT | O_RDONLY);
 	guard_lock guard(fl);
 
-	sleep(10);
+	server {}.run();
 }
