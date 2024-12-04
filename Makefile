@@ -6,6 +6,15 @@ DEBUG	:= 1
 
 .ONESHELL:
 
+override threads := $(shell nproc --all)
+
+# set make flags
+override MAKEFLAGS += --warn-undefined-variables --no-builtin-rules \
+					  --jobs=$(threads) \
+					  --no-print-directory
+
+#--output-sync=target \
+
 override srcdir := src
 
 override incdir := inc
@@ -44,17 +53,32 @@ override compile_commands := compile_commands.json
 
 override name := Matt_daemon
 
+
+
+# -- S P E C I A L  T A R G E T S ---------------------------------------------
+
+
+.NOTPARALLEL: $(compile_commands) re fclean clean
+
+.PHONY: all clean fclean re log restart kill
+
+
+# -- T A R G E T S ------------------------------------------------------------
+
 all: $(compile_commands) $(name)
 
 $(name): $(objs)
-	$(cxx) $^ -o $@ $(ldflags)
+	@$(cxx) $^ -o $@ $(ldflags)
+	echo 'linking' $@
 
 $(compile_commands): $(srcs) Makefile
-	$(call generate_compile_commands)
+	@$(call generate_compile_commands)
+	echo 'generating' $@
 
 -include $(deps)
 %.o: %.cpp Makefile
-	$(cxx) $(depsflags) $(cxxflags) -c $< -o $@
+	@$(cxx) $(depsflags) $(cxxflags) -c $< -o $@
+	echo 'compiling' $<
 
 clean:
 	@rm -vf $(objs) $(deps) $(compile_commands)
@@ -86,7 +110,6 @@ kill:
 		kill -s $(signal) $$pid
 	fi
 
-.PHONY: all clean fclean re log restart kill
 
 # -- F U N C T I O N S --------------------------------------------------------
 

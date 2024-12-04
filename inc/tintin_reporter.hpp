@@ -7,29 +7,8 @@
 #include <cstring>
 #include "timestamp.hpp"
 
+#include "system/write.hpp"
 
-namespace sys {
-
-
-	inline auto write(const int& fd, const char* buffer, const size_t& size) -> void {
-
-		if (::write(fd, buffer, size) == -1)
-			throw std::runtime_error("write");
-	}
-
-	template <unsigned N>
-	auto write(const int& fd, const char (&buffer)[N]) -> void {
-		sys::write(fd, buffer, N);
-	}
-
-	inline auto write(const int& fd, const std::string_view& view) -> void {
-		sys::write(fd, view.data(), view.size());
-	}
-
-	inline auto write(const int& fd, const std::string& str) -> void {
-		sys::write(fd, str.data(), str.size());
-	}
-}
 
 class file_event {
 
@@ -83,22 +62,44 @@ namespace sys {
 
 #include "file.hpp"
 
+
 class Tintin_reporter : public file_event {
 
 
 	private:
 
+		// -- private members -------------------------------------------------
+
+		/* log file */
 		file _log;
+
+		/* buffer */
 		std::string _buffer;
 
 
-		static constexpr const char *log_folder = "/var/log/matt_daemon";
-		static constexpr const char *log_file = "/var/log/matt_daemon/matt_daemon.log";
+		// -- private static members ------------------------------------------
+
+		/* log file path */
+		static constexpr const char* log_file = "/var/log/matt_daemon/matt_daemon.log";
+
+
+
 
 		static void _setup(void);
 
-	public:
 
+		// -- private static methods ------------------------------------------
+
+		/* get shared instance */
+		static auto _shared(void) -> Tintin_reporter& {
+			static Tintin_reporter instance;
+			return instance;
+		}
+
+
+		// -- private lifecycle -----------------------------------------------
+
+		/* default constructor */
 		Tintin_reporter(void)
 		: _log{log_file, O_CREAT | O_WRONLY | O_APPEND, 0644},
 		  _buffer{} {
@@ -116,7 +117,7 @@ class Tintin_reporter : public file_event {
 		~Tintin_reporter(void) noexcept = default;
 
 
-
+	public:
 
 		void in_delete(void) override {
 
@@ -135,11 +136,6 @@ class Tintin_reporter : public file_event {
 			in_delete();
 		}
 
-
-		static auto _shared(void) -> Tintin_reporter& {
-			static Tintin_reporter instance;
-			return instance;
-		}
 
 
 	private:
