@@ -1,6 +1,6 @@
 # MAKEFILE
 
-DEBUG	:= 1
+DEBUG := 1
 
 .DEFAULT_GOAL := all
 
@@ -14,6 +14,7 @@ override MAKEFLAGS += --warn-undefined-variables --no-builtin-rules \
 					  --no-print-directory
 
 #--output-sync=target \
+
 
 override srcdir := src
 
@@ -57,8 +58,6 @@ override name := Matt_daemon
 
 # -- S P E C I A L  T A R G E T S ---------------------------------------------
 
-
-.NOTPARALLEL: $(compile_commands) re fclean clean
 
 .PHONY: all clean fclean re log restart kill
 
