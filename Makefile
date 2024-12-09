@@ -37,7 +37,7 @@ override cxx	:= ccache clang++
 override std	:= -std=c++2a
 
 ifeq ($(DEBUG), 1)
-override opt	:= -O0
+override opt	:= -O0 -gdwarf-4
 override dbg	:= -g -Wno-unused-parameter -Wno-unused-variable 
 else
 override opt	:= -O3
@@ -59,7 +59,7 @@ override name := Matt_daemon
 # -- S P E C I A L  T A R G E T S ---------------------------------------------
 
 
-.PHONY: all clean fclean re log restart kill
+.PHONY: all clean fclean re log restart kill leaks
 
 
 # -- T A R G E T S ------------------------------------------------------------
@@ -108,6 +108,12 @@ kill:
 	else
 		kill -s $(signal) $$pid
 	fi
+
+
+leaks:
+	valgrind --log-file=valgrind.log \
+         --trace-children=yes \
+         --track-origins=yes $(name)
 
 
 # -- F U N C T I O N S --------------------------------------------------------
