@@ -5,9 +5,7 @@
 int	main(void) {
 
 	try {
-
-		Deamon deamon;
-		deamon.run();
+		daemon::run();
 		return EXIT_SUCCESS;
 	}
 

@@ -6,13 +6,13 @@
 #include "server.hpp"
 #include "signal.hpp"
 
-void Deamon::_is_root() {
+void daemon::_is_root() {
 	if (::getuid() != 0) {
 		throw std::runtime_error("You must be root to run this program.");
 	}
 }
 
-pid_t Deamon::_fork() {
+pid_t daemon::_fork() {
 	const pid_t pid = ::fork();
 	if (pid == -1) {
 		throw std::runtime_error("Fork failed.");
@@ -20,28 +20,25 @@ pid_t Deamon::_fork() {
 	return pid;
 }
 
-Deamon::Deamon() {
-}
-
-void Deamon::_new_session() {
+void daemon::_new_session() {
 	if (::setsid() == -1) {
 		throw std::runtime_error("Failed to create a new session.");
 	}
 }
 
-void Deamon::_go_to_root() {
+void daemon::_go_to_root() {
 	if (::chdir("/") == -1) {
 		throw std::runtime_error("Failed to change directory to root.");
 	}
 }
 
-void Deamon::_close_fds() {
+void daemon::_close_fds() {
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
 }
 
-void Deamon::run() {
+void daemon::run() {
 
 	sig::init();
 
