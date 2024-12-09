@@ -6,7 +6,7 @@
 
 # include "timestamp.hpp"
 # include "file.hpp"
-
+# include <string.h>
 
 class Tintin_reporter final {
 
@@ -34,30 +34,26 @@ class Tintin_reporter final {
 
 					if (::mkdir(folder[i], 0755) == -1)
 						return;
-				}
-
-				if (!S_ISDIR(st.st_mode))
+				} else if (!S_ISDIR(st.st_mode)) {
 					return;
+				}
 			}
 
 
 			timestamp ts;
 
 			const int fd = ::open("/var/log/matt_daemon/matt_daemon.log",
-								O_WRONLY | O_APPEND | O_CREAT);
+								O_WRONLY | O_APPEND | O_CREAT, 0644);
 
 			if (fd == -1)
 				return;
 
 			static_cast<void>(::write(fd, ts.time(), ts.size()));
 			static_cast<void>(::write(fd, type, N));
-			static_cast<void>(::write(fd, message, __builtin_strlen(message)));
+			static_cast<void>(::write(fd, message, ::strlen(message)));
 			static_cast<void>(::write(fd, "\n", 1U));
-
 			static_cast<void>(::close(fd));
 		}
-
-
 
 
 	public:

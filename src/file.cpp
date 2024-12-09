@@ -7,7 +7,10 @@ file::operator int() const noexcept {
 
 void file::lock() const {
 	if (::flock(*this, LOCK_EX | LOCK_NB) == -1) {
-		throw std::runtime_error("Failed to lock file");
+		if (errno == EWOULDBLOCK) {
+			throw std::runtime_error("File is already locked.");
+		}
+		throw std::runtime_error("Failed to lock file.");
 	}
 }
 
