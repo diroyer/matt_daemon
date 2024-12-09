@@ -58,10 +58,12 @@ void Deamon::run() {
 	}
 
 	_go_to_root();
+
 	::umask(0);
 	_close_fds();
 
-	file fl("/var/lock/matt_daemon.lock", O_CREAT);
+
+	file fl("/var/lock/matt_daemon.lock", O_CREAT, 0440);
 	guard_lock guard(fl);
 
 	server{}.run();
