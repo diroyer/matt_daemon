@@ -1,12 +1,12 @@
 # MAKEFILE
 
-DEBUG := 1
+DEBUG := 0
 
 .DEFAULT_GOAL := all
 
 .ONESHELL:
 
-override threads := $(shell nproc --all)
+override threads := 1
 
 # set make flags
 override MAKEFLAGS += --warn-undefined-variables --no-builtin-rules \
@@ -97,9 +97,10 @@ log:
 
 restart: kill
 	@rm -vf $(lock) $(log)
+	rm -vrf '/var/log/matt_daemon'
 
 
-signal := KILL
+signal := STOP
 
 kill:
 	@pid=$$(ps aux | grep $(name) | grep -v 'grep' | awk '{print $$2}')

@@ -5,6 +5,12 @@
 
 static void handler(int sig) {
 	switch (sig) {
+		case SIGTSTP:
+			Tintin_reporter::signal("SIGTSTP received");
+			break;
+		case SIGCONT:
+			Tintin_reporter::signal("SIGCONT received");
+			break;
 		case SIGINT:
 			Tintin_reporter::signal("SIGINT received");
 			running::stop();
@@ -30,7 +36,8 @@ static void handler(int sig) {
 			running::stop();
 			break;
 		default:
-			Tintin_reporter::signal("Unknown signal received");
+			Tintin_reporter::signal("unhandled signal received");
+			running::stop();
 			break;
 	}
 }
@@ -47,5 +54,5 @@ void record(void) {
 }
 
 void sig::init() {
-	record<SIGINT, SIGTERM, SIGQUIT, SIGABRT, SIGHUP, SIGSEGV>();
+	record<SIGTSTP, SIGCONT, SIGINT, SIGTERM, SIGQUIT, SIGABRT, SIGHUP, SIGSEGV>();
 }

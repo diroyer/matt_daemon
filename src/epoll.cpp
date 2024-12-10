@@ -44,18 +44,16 @@ ioevent& epoll::_data(epoll_event& event) noexcept {
 
 void epoll::poll(void) {
 
-	// 20ms timeout
-	constexpr int timeout = 200;
-
 	struct ::epoll_event buffer[3U + 1U];
 
 	// wait for events
-	const int result = ::epoll_wait(_shared()._epoll, buffer, 4U, timeout);
+	const int result = ::epoll_wait(_shared()._epoll, buffer, 4U, -1);
 
 	// TODO: handle signals
 	if (result < 0) {
-		if (errno == EINTR)
+		if (errno == EINTR) {
 			return;
+		}
 		throw std::runtime_error("epoll_wait");
 	}
 

@@ -34,7 +34,9 @@ class Tintin_reporter final {
 
 					if (::mkdir(folder[i], 0755) == -1)
 						return;
-				} else if (!S_ISDIR(st.st_mode)) {
+				}
+
+				if (!S_ISDIR(st.st_mode)) {
 					return;
 				}
 			}

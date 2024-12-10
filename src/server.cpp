@@ -8,11 +8,11 @@
 server::server()
 : _socket{AF_INET, SOCK_STREAM} {
 
-	_socket.reuse_address();
 	_socket.bind(net::addr{in_addr{INADDR_ANY}, 4242});
 	_socket.listen();
 
 	_socket.non_blocking();
+	_socket.reuse_address();
 
 	epoll::add(*this);
 
@@ -58,6 +58,5 @@ void server::run() {
 	while (running::state() == true) {
 
 		epoll::poll();
-		//inotify::watch();
 	}
 }
